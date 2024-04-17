@@ -1,0 +1,49 @@
+<mujoco>
+    <compiler autolimits="true"/>
+
+    <default>
+        <motor ctrlrange="-1 1" ctrllimited="true"/>
+        <mesh scale=".01 .01 .01" />
+        <geom friction=".7" solimp=".9 .99 .003" solref=".015 1"/>
+        <joint type="hinge" damping=".2" armature=".01" solimplimit="0 .99 .01" ref="0" actuatorfrcrange="-0.5 0.5"/>
+    </default>
+
+
+    <asset>
+        <texture name="grid" type="2d" builtin="checker" width="512" height="512" rgb1=".1 .2 .3" rgb2=".2 .3 .4"/>
+        <material name="grid" texture="grid" texrepeat="1 1" texuniform="true" reflectance=".2"/>
+        <mesh name="Foot" file="Hopper_Foot.stl"/>
+        <mesh name="bat" file="battery.stl"/>
+        <mesh name="bat_hold" file="battery_holder.stl"/>
+        <mesh name="hip_servo" file="Hip_servo.stl"/>
+        <mesh name="horn" file="horn.stl"/>
+    </asset>
+
+    <worldbody>
+        <geom name="floor" pos="0 0 -1" size="0 0 .05" type="plane" material="grid" condim="3"/>
+        <light name="spotlight" mode="targetbodycom" target="bat" diffuse=".8 .8 .8" specular="0.3 0.3 0.3" pos="0 -6 4" cutoff="30"/>
+        <body name="bat" pos="0 0 5">
+            <!--<freejoint/>-->
+            <geom name="battery" type="mesh" mesh="bat"/>
+                <body name="bathold">
+                <geom name="bathold" type="mesh" mesh="bat_hold"/>
+                    <body name="hip servo">
+                    <geom name="hip_servo" type="mesh" mesh="hip_servo"/>
+                        <body name="hip_horn" pos="-.34 -.17 -.42">
+                        <joint axis="1 0 0" />
+                        <geom name="hip_horn" type="mesh" mesh="horn"/>
+                            <body name="foot" pos="0 0 -1">
+                            <joint type="hinge" />
+                            <geom name="foot" type="mesh" mesh="Foot"/>
+                            </body>
+                        </body>
+                    </body>
+            </body>
+        </body>
+    </worldbody>
+
+     <contact>
+        <exclude name="horn-servo" body1="hip_horn" body2="hip servo" />
+    </contact>
+
+</mujoco>
