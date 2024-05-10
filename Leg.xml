@@ -1,11 +1,24 @@
+<!-- 
+    Units:
+        Length: cm
+        Mass: Kg
+
+    Notes:
+        need to add proper actuators
+        need to add acurate joint dynamics
+        needs proper materials with masses in kg
+ -->
+
 <mujoco>
     <compiler autolimits="true"/>
+
+    <option timestep="0.001"/>
 
     <default>
         <motor ctrlrange="-1 1" ctrllimited="true"/>
         <mesh scale=".01 .01 .01" />
         <geom friction=".7" solimp=".9 .99 .003" solref=".015 1"/>
-        <joint type="hinge" damping=".2" armature=".01" solimplimit="0 .99 .01" ref="0" actuatorfrcrange="-0.5 0.5"/>
+        <joint type="hinge" range="-90 90" damping=".2" armature=".01" solimplimit="0 .99 .01" ref="0" actuatorfrcrange="-0.5 0.5"/>
     </default>
 
 
@@ -17,33 +30,84 @@
         <mesh name="bat_hold" file="battery_holder.stl"/>
         <mesh name="hip_servo" file="Hip_servo.stl"/>
         <mesh name="horn" file="horn.stl"/>
+        <mesh name="femur_brak" file="femur_brak.stl"/>
+        <mesh name="femur" file="CFrod.stl"/>
+        <mesh name="knee_servo_brak" file="knee_servo_brak.stl"/>
+        <mesh name="knee_servo" file="knee_servo.stl"/>
+        <mesh name="ankle_servo_brak" file="ankle_servo_brak.stl"/>
+        <mesh name="ankle_pitch" file="Ankle_Pitch.stl"/>
+        <mesh name="ankle_roll" file="Ankle_Roll.stl"/>
     </asset>
 
     <worldbody>
         <geom name="floor" pos="0 0 -1" size="0 0 .05" type="plane" material="grid" condim="3"/>
         <light name="spotlight" mode="targetbodycom" target="bat" diffuse=".8 .8 .8" specular="0.3 0.3 0.3" pos="0 -6 4" cutoff="30"/>
-        <body name="bat" pos="0 0 5">
-            <!--<freejoint/>-->
+        <body name="bat" pos="0 0 6">
+            <!--!<freejoint/>-->
             <geom name="battery" type="mesh" mesh="bat"/>
                 <body name="bathold">
                 <geom name="bathold" type="mesh" mesh="bat_hold"/>
                     <body name="hip servo">
                     <geom name="hip_servo" type="mesh" mesh="hip_servo"/>
                         <body name="hip_horn" pos="-.34 -.17 -.42">
-                        <joint axis="1 0 0" />
+                        <joint axis="1 0 0" limited="true" range="-90 90" />
                         <geom name="hip_horn" type="mesh" mesh="horn"/>
-                            <body name="foot" pos="0 0 -1">
-                            <joint type="hinge" />
-                            <geom name="foot" type="mesh" mesh="Foot"/>
+                            <body name="femur_brak" pos="-.1 0 -.15">
+                            <geom name="femur_brak" type="mesh" mesh="femur_brak"/>
+                                <body name="femur" pos="-.125 0 -2.5">
+                                <geom name="femur" type="mesh" mesh="femur"/>
+                                    <body name="knee_servo_brak" pos=".015 .14 .4">
+                                    <geom name="knee_servo_brak" type="mesh" mesh="knee_servo_brak"/>
+                                        <body name="knee_servo" pos=".135 .14 -.1">
+                                        <geom name="knee_servo" type="mesh" mesh="knee_servo" />
+                                            <body name="knee_horn" pos=".125 0 -.05">
+                                            <joint name="knee" axis="1 0 0" limited="true" range="-5 175" />
+                                            <geom name="knee_horn" type="mesh" mesh="horn" axisangle="0 0 1 180" />
+                                                <body name="shin_brak" pos=".106 0 -.1465">
+                                                <geom name="shin_brak" type="mesh" mesh="femur_brak" axisangle="0 0 1 180"/>
+                                                    <body name="shin" pos=".125 0 -2.5">
+                                                    <geom name="shin" type="mesh" mesh="femur"/>
+
+                                                        <body name="ankle_servo_brak" pos="0 -.07 .7">
+                                                        <geom name="ankle_servo_brak" type="mesh" mesh="ankle_servo_brak"/>
+                                                        </body>
+
+                                                        <body name="ankle_pitch" pos="0 0 -.13">
+                                                        <geom name="ankle_pitch" type="mesh" mesh="ankle_pitch"/>
+                                                            <body name="ankle_roll" pos="0 0 0">
+                                                            <geom name="ankle_roll" type="mesh" mesh="ankle_roll"/>
+                                                            <joint type="hinge" axis="1 0 0" />
+                                                                <body name="foot" pos="0 0 -1">
+                                                                <joint type="hinge" axis="0 1 0" />
+                                                                <geom name="foot" type="mesh" mesh="Foot"/>
+                                                                </body>
+                                                            </body>
+                                                        </body>
+                                                    </body>
+                                                </body>
+                                            </body>
+                                        </body>
+                                    </body>
+                                </body>
                             </body>
                         </body>
                     </body>
             </body>
         </body>
+
+    
+    
     </worldbody>
 
      <contact>
         <exclude name="horn-servo" body1="hip_horn" body2="hip servo" />
+        <exclude name="hip servo brak" body1="hip_horn" body2="femur_brak" />
+        <exclude name="hip servo" body1="hip servo" body2="femur_brak" />
     </contact>
 
+    <actuator>
+        <general name="knee" forcerange="0 155" gainprm="10"   gear="400"  joint="knee"/>
+    </actuator>
+
 </mujoco>
+
